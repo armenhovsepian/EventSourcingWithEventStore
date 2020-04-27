@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WebAPI.Data;
+using WebAPI.Services;
 
 namespace WebAPI
 {
@@ -24,6 +25,10 @@ namespace WebAPI
             services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase(databaseName:"AppDb"));
 
             services.AddControllers();
+
+            services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<IProductService, ProductService>();
+
 
             services.AddSwaggerGen(c =>
             {

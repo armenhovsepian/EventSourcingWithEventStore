@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using WebAPI.Data;
+using System.Threading;
+using System.Threading.Tasks;
 using WebAPI.Entities;
+using WebAPI.Services;
 using static WebAPI.Models.RequestModels;
 
 namespace WebAPI.Controllers
@@ -12,51 +13,51 @@ namespace WebAPI.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly AppDbContext _dbContext;
+        private readonly IProductService _productService;
 
-        public ProductController(AppDbContext dbContext)
+
+        public ProductController(IProductService productService)
         {
-            _dbContext = dbContext;
+            _productService = productService;
         }
 
         // GET: api/Product
         [HttpGet]
-        public ActionResult<IEnumerable<Product>> Get()
+        public async Task<ActionResult<IEnumerable<Product>>> Get(CancellationToken ct)
         {
-            var products = _dbContext.Products.ToList();               
+            var products = await _productService.GetAllListAsync(ct);               
             return Ok(products);
         }
 
         // GET: api/Product/5
         [HttpGet("{id}", Name = "Get")]
-        public ActionResult<Product> Get(int id)
+        public async Task<ActionResult<Product>> Get(int id, CancellationToken ct)
         {
-            var product = _dbContext.Products.Find(id);
+            var product = await _productService.GetByIdAsync(id, ct);
             return Ok(product);
         }
 
         // POST: api/Product
         [HttpPost]
-        public ActionResult Post([FromBody] Product model)
+        public async Task<ActionResult> Post([FromBody] Product model, CancellationToken ct)
         {
-            _dbContext.Products.Add(model);
+            await _productService.AddAsync(model, ct);
             return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
         }
 
         // PUT: api/product/name/5
         [Route("name/{id}")]
         [HttpPut]
-        public ActionResult Put(int id, [FromBody] V1.UpdateProductName model)
+        public async Task<ActionResult> Put(int id, [FromBody] V1.UpdateProductName model, CancellationToken ct)
         {
             if (id != model.Id) return BadRequest();
 
-            var product = _dbContext.Products.Find(id);
+            var product = await _productService.GetByIdAsync(id, ct);
             if (product == null) return NotFound();
 
             product.Name = model.Name;
             product.Modified = DateTime.Now;
-            _dbContext.Products.Update(product);
-            _dbContext.SaveChanges();
+            await _productService.UpdateName(product, ct);
 
             return NoContent();
         }
@@ -64,17 +65,16 @@ namespace WebAPI.Controllers
         // PUT: api/product/price/5
         [Route("price/{id}")]
         [HttpPut]
-        public ActionResult Put(int id, [FromBody] V1.UpdateProductPrice model)
+        public async Task<ActionResult> Put(int id, [FromBody] V1.UpdateProductPrice model, CancellationToken ct)
         {
             if (id != model.Id) return BadRequest();
 
-            var product = _dbContext.Products.Find(id);
+            var product = await _productService.GetByIdAsync(id, ct);
             if (product == null) return NotFound();
 
             product.Price = model.Price;
             product.Modified = DateTime.Now;
-            _dbContext.Products.Update(product);
-            _dbContext.SaveChanges();
+            await _productService.UpdatePrice(product, ct);
 
             return NoContent();
         }
@@ -82,14 +82,13 @@ namespace WebAPI.Controllers
 
         // DELETE: api/ApiWithActions/5
         [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
+        public async Task<ActionResult> Delete(int id, CancellationToken ct)
         {
-            var product = _dbContext.Products.Find(id);
+            var product = await _productService.GetByIdAsync(id, ct);
 
             if (product == null) return NotFound();
 
-            _dbContext.Products.Remove(product);
-            _dbContext.SaveChanges();
+            await _productService.DeleteAsync(product, ct);
 
             return NoContent();
         }
