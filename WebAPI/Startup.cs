@@ -24,6 +24,17 @@ namespace WebAPI
             services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase(databaseName:"AppDb"));
 
             services.AddControllers();
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc(
+                "v1",
+                new Microsoft.OpenApi.Models.OpenApiInfo
+                {
+                    Title = "Products",
+                    Version = "v1"
+                });
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,6 +60,13 @@ namespace WebAPI
             {
                 endpoints.MapControllers();
             });
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            c.SwaggerEndpoint(
+                "/swagger/v1/swagger.json",
+                "Products v1"));
+
         }
     }
 }

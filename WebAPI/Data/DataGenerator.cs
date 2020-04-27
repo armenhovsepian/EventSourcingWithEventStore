@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using WebAPI.Models;
+using WebAPI.Entities;
 
 namespace WebAPI.Data
 {
@@ -13,7 +13,8 @@ namespace WebAPI.Data
             dbContext.Products.AddRange(pNames.Select((name, index) => new Product
             {
                 Name = name,
-                Price = rnd.Next(10, 100)
+                Price = rnd.Next(10, 100),
+                Created = DateTime.Now
             }));
             dbContext.SaveChanges();
         }

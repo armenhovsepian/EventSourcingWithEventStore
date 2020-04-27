@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using WebAPI.Data;
-using WebAPI.Models;
+using WebAPI.Entities;
+using static WebAPI.Models.RequestModels;
 
 namespace WebAPI.Controllers
 {
@@ -41,30 +43,36 @@ namespace WebAPI.Controllers
             return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
         }
 
-        // PUT: api/name/5
-        [Route("name")]
-        [HttpPut("{id}")]
-        public ActionResult Put(int id, [FromBody] string name)
+        // PUT: api/product/name/5
+        [Route("name/{id}")]
+        [HttpPut]
+        public ActionResult Put(int id, [FromBody] V1.UpdateProductName model)
         {
+            if (id != model.Id) return BadRequest();
+
             var product = _dbContext.Products.Find(id);
             if (product == null) return NotFound();
 
-            product.Name = name;
+            product.Name = model.Name;
+            product.Modified = DateTime.Now;
             _dbContext.Products.Update(product);
             _dbContext.SaveChanges();
 
             return NoContent();
         }
 
-        // PUT: api/price/5
-        [Route("price")]
-        [HttpPut("{id}")]
-        public ActionResult Put(int id, [FromBody] decimal price)
+        // PUT: api/product/price/5
+        [Route("price/{id}")]
+        [HttpPut]
+        public ActionResult Put(int id, [FromBody] V1.UpdateProductPrice model)
         {
+            if (id != model.Id) return BadRequest();
+
             var product = _dbContext.Products.Find(id);
             if (product == null) return NotFound();
 
-            product.Price = price;
+            product.Price = model.Price;
+            product.Modified = DateTime.Now;
             _dbContext.Products.Update(product);
             _dbContext.SaveChanges();
 

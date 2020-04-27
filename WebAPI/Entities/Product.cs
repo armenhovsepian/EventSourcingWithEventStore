@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WebAPI.Models
+namespace WebAPI.Entities
 {
     public class Product
     {
@@ -8,6 +8,6 @@ namespace WebAPI.Models
         public string Name { get; set; }
         public decimal Price { get; set; }
         public DateTime Created { get; set; }
-        public DateTime Modified { get; set; }
+        public DateTime? Modified { get; set; }
     }
 }
