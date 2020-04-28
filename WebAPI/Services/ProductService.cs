@@ -11,10 +11,8 @@ namespace WebAPI.Services
         Task<Product> GetByIdAsync(int id, CancellationToken ct);
         Task<IReadOnlyList<Product>> GetAllListAsync(CancellationToken ct);
         Task AddAsync(Product entity, CancellationToken ct);
-        Task UpdateName(Product entity, CancellationToken ct);
-        Task UpdatePrice(Product entity, CancellationToken ct);
-
         Task DeleteAsync(Product entity, CancellationToken ct);
+        Task UpdateAsync(Product entity, CancellationToken ct);
     }
 
 
@@ -22,11 +20,14 @@ namespace WebAPI.Services
     {
         private readonly AppDbContext _dbContext;
         private readonly IProductRepository _productRepository;
+        private readonly IEventStoreService _eventStoreService;
 
-        public ProductService(AppDbContext dbContext, IProductRepository productRepository)
+        public ProductService(AppDbContext dbContext, IProductRepository productRepository,
+            IEventStoreService eventStoreService)
         {
             _dbContext = dbContext;
             _productRepository = productRepository;
+            _eventStoreService = eventStoreService;
         }
 
         public async Task<IReadOnlyList<Product>> GetAllListAsync(CancellationToken ct)
@@ -48,21 +49,11 @@ namespace WebAPI.Services
             await SaveChangesAsync(ct);
         }
 
-        public async Task UpdateName(Product entity, CancellationToken ct)
-        {
-            await UpdateAsync(entity, ct);
-
-        }
-
-        public async Task UpdatePrice(Product entity, CancellationToken ct)
-        {
-            await UpdateAsync(entity, ct);
-        }
-
-        private async Task UpdateAsync(Product entity, CancellationToken ct)
+        public async Task UpdateAsync(Product entity, CancellationToken ct)
         {
             await _productRepository.UpdateAsync(entity, ct);
             await SaveChangesAsync(ct);
+            await _eventStoreService.Save(entity);
         }
 
         private async Task SaveChangesAsync(CancellationToken ct)

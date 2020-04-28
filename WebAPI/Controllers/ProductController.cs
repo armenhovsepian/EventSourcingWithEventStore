@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,11 +13,12 @@ namespace WebAPI.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
+        private readonly IEventStoreService _eventStoreService;
 
-
-        public ProductController(IProductService productService)
+        public ProductController(IProductService productService, IEventStoreService eventStoreService)
         {
             _productService = productService;
+            _eventStoreService = eventStoreService;
         }
 
         // GET: api/Product
@@ -55,9 +55,9 @@ namespace WebAPI.Controllers
             var product = await _productService.GetByIdAsync(id, ct);
             if (product == null) return NotFound();
 
-            product.Name = model.Name;
-            product.Modified = DateTime.Now;
-            await _productService.UpdateName(product, ct);
+            product.UpdateName(model.Name);
+            
+            await _productService.UpdateAsync(product, ct);
 
             return NoContent();
         }
@@ -72,9 +72,9 @@ namespace WebAPI.Controllers
             var product = await _productService.GetByIdAsync(id, ct);
             if (product == null) return NotFound();
 
-            product.Price = model.Price;
-            product.Modified = DateTime.Now;
-            await _productService.UpdatePrice(product, ct);
+            product.UpdatePrice(model.Price);
+
+            await _productService.UpdateAsync(product, ct);
 
             return NoContent();
         }
@@ -92,5 +92,18 @@ namespace WebAPI.Controllers
 
             return NoContent();
         }
+
+
+
+        // Get product change history
+        [Route("history/{id}")]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<object>>> GetEventsAsync(int id)
+        {
+            var product = await _eventStoreService.Load(id);
+            var changes = product.GetChanges();
+            return Ok(changes);
+        }
+
     }
 }

@@ -1,3 +1,4 @@
+using EventStore.ClientAPI;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -26,10 +27,24 @@ namespace WebAPI
 
             services.AddControllers();
 
+
+
+
+            var esConnection = EventStoreConnection.Create(
+                    Configuration["EventStore:connectionString"],
+                    ConnectionSettings.Create().KeepReconnecting(),
+                    "asd");
+
+            var store = new EventStoreService(esConnection);
+            services.AddSingleton(esConnection);
+            services.AddSingleton<IEventStoreService>(store);
+
+
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<IProductService, ProductService>();
 
 
+            services.AddSingleton<IHostedService, HostedService>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc(
