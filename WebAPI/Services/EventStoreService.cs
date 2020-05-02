@@ -50,20 +50,22 @@ namespace WebAPI.Services
 
         public async Task<Product> Load(int productId)
         {
-
             var stream = GetStreamName(productId);
-            var aggregate = (Product)Activator.CreateInstance(typeof(Product), true);
+            var product = (Product)Activator.CreateInstance(typeof(Product), true);
             var page = await _connection.ReadStreamEventsForwardAsync(stream, 0, 1024, false);
-            aggregate.LoadChanges(page.Events.Select(resolvedEvent =>
+            var events = page.Events.Select(resolvedEvent =>
             {
-                var meta = JsonConvert.DeserializeObject<EventMetadata>(
-                            Encoding.UTF8.GetString(resolvedEvent.Event.Metadata));
+                var meta = JsonConvert.DeserializeObject<EventMetadata>(Encoding.UTF8.GetString(resolvedEvent.Event.Metadata));
                 var dataType = Type.GetType(meta.ClrType);
+                var createdData = resolvedEvent.Event.Created;
                 var jsonData = Encoding.UTF8.GetString(resolvedEvent.Event.Data);
                 var data = JsonConvert.DeserializeObject(jsonData, dataType);
+                
                 return data;
-            }).ToArray());
-            return aggregate;
+            });
+
+            product.LoadChanges(events);
+            return product;
         }
 
 

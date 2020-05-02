@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using WebAPI.Entities;
@@ -25,7 +26,7 @@ namespace WebAPI.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Product>>> Get(CancellationToken ct)
         {
-            var products = await _productService.GetAllListAsync(ct);               
+            var products = await _productService.GetAllListAsync(ct);
             return Ok(products);
         }
 
@@ -56,7 +57,7 @@ namespace WebAPI.Controllers
             if (product == null) return NotFound();
 
             product.UpdateName(model.Name);
-            
+
             await _productService.UpdateAsync(product, ct);
 
             return NoContent();
@@ -101,7 +102,14 @@ namespace WebAPI.Controllers
         public async Task<ActionResult<IEnumerable<object>>> GetEventsAsync(int id)
         {
             var product = await _eventStoreService.Load(id);
-            var changes = product.GetChanges();
+            var changes = product.GetChanges()
+                .GroupBy(e => e.GetType())
+                .Select(e => new
+                {
+                    EventType = e.Key.Name,
+                    Events = e.ToArray()
+                }).ToArray();
+
             return Ok(changes);
         }
 
