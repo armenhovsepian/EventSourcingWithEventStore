@@ -3,14 +3,14 @@ using System;
 
 namespace WebAPI.Events
 {
-    public static class Events
+    public static class ProductEvents
     {
-        public class BaseProductEvent
+        public class BaseProductEvent : IDomainEvent
         {
             public int Id { get; set; }
 
-            [JsonIgnore]
-            public DateTime Created { get; set; }
+            //[JsonIgnore]
+            public DateTimeOffset Created => DateTimeOffset.UtcNow;
 
             [JsonIgnore]
             public virtual string SimpleTypeName => GetType().Name;
@@ -18,21 +18,18 @@ namespace WebAPI.Events
             public virtual string FullyQuailifiedTypeName => GetType().AssemblyQualifiedName; // FQCN
         }
 
-        public class ProductCreated
+        public class ProductCreated : BaseProductEvent
         {
-            public int Id { get; set; }
             public int UserId { get; set; }
         }
 
-        public class ProductNameUpdated
+        public class ProductNameUpdated : BaseProductEvent
         {
-            public int Id { get; set; }
             public string Name { get; set; }
         }
 
-        public class ProductPriceUpdated
+        public class ProductPriceUpdated : BaseProductEvent
         {
-            public int Id { get; set; }
             public decimal Price { get; set; }
         }
     }

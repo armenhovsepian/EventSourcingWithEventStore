@@ -9,8 +9,7 @@ using WebAPI.Events;
 
 namespace WebAPI.Services
 {
-    public interface IEventStoreService
-    {
+    public interface IEventStoreService { 
         Task<bool> Exists(int productId);
         Task<Product> Load(int productId);
         Task Save(Product entity);
@@ -60,8 +59,7 @@ namespace WebAPI.Services
                 var createdData = resolvedEvent.Event.Created;
                 var jsonData = Encoding.UTF8.GetString(resolvedEvent.Event.Data);
                 var data = JsonConvert.DeserializeObject(jsonData, dataType);
-                
-                return data;
+                return (IDomainEvent)data;
             });
 
             product.LoadChanges(events);

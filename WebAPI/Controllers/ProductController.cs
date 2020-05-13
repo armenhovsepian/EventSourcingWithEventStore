@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WebAPI.Entities;
 using WebAPI.Services;
+using static WebAPI.Events.ProductEvents;
 using static WebAPI.Models.RequestModels;
 
 namespace WebAPI.Controllers
@@ -99,18 +100,16 @@ namespace WebAPI.Controllers
         // Get product change history
         [Route("history/{id}")]
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<object>>> GetEventsAsync(int id)
+        public async Task<ActionResult> GetEventsAsync(int id)
         {
             var product = await _eventStoreService.Load(id);
-            var changes = product.GetChanges()
-                .GroupBy(e => e.GetType())
-                .Select(e => new
-                {
-                    EventType = e.Key.Name,
-                    Events = e.ToArray()
-                }).ToArray();
 
-            return Ok(changes);
+            var priceHistory = product.GetChanges()
+                .Where(e => e is ProductPriceUpdated)
+                .Select(e => (ProductPriceUpdated)e)
+                .Select(e => new { e.Price, e.Created });
+
+            return Ok(priceHistory);
         }
 
     }

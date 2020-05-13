@@ -1,19 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static WebAPI.Events.Events;
+using WebAPI.Events;
+using static WebAPI.Events.ProductEvents;
 
 namespace WebAPI.Entities
 {
     public class Product
     {
-        private readonly List<object> _events;
-        public IEnumerable<object> GetChanges() => _events.AsEnumerable();
-        protected Product() => _events = new List<object>();
+        private readonly List<IDomainEvent> _events;
+        public IEnumerable<IDomainEvent> GetChanges() => _events.AsEnumerable();
+        protected Product() => _events = new List<IDomainEvent>();
         public Product(string name, decimal price) : this()
         {
             Name = name;
             Price = price;
+            var evt = new ProductCreated
+            {
+                Id = Id            
+            };
+            _events.Add(evt);
         }
 
         public int Id { get; set; }
@@ -49,7 +55,7 @@ namespace WebAPI.Entities
             _events.Add(evt);
         }
 
-        public void LoadChanges(IEnumerable<object> history)
+        public void LoadChanges(IEnumerable<IDomainEvent> history)
         {
             foreach (var e in history)
                 _events.Add(e);
