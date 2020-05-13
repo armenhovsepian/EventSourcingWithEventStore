@@ -9,7 +9,8 @@ using WebAPI.Events;
 
 namespace WebAPI.Services
 {
-    public interface IEventStoreService { 
+    public interface IEventStoreService 
+    { 
         Task<bool> Exists(int productId);
         Task<Product> Load(int productId);
         Task Save(Product entity);
