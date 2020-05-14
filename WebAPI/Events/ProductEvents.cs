@@ -10,7 +10,7 @@ namespace WebAPI.Events
             public int Id { get; set; }
 
             //[JsonIgnore]
-            public DateTimeOffset Created => DateTimeOffset.UtcNow;
+            public DateTimeOffset Created { get; set; } = DateTimeOffset.UtcNow;
 
             [JsonIgnore]
             public virtual string SimpleTypeName => GetType().Name;
